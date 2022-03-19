@@ -27,7 +27,9 @@ public:
     Node() {} 
 
     Node(K k, V v, int); 
-
+	
+    Node(int);
+	
     ~Node();
 
     K get_key() const;
@@ -58,6 +60,13 @@ Node<K, V>::Node(const K k, const V v, int level) {
 	// Fill forward array with 0(NULL) 
     memset(this->forward, 0, sizeof(Node<K, V>*)*(level+1));
 };
+
+template<typename K, typename V>
+Node<K, V>::Node(int level) {
+    this->node_level = level;
+    this->forward = new Node<K, V>*[level + 1];
+    memset(this->forward, 0, sizeof(Node<K, V>*) * (level + 1));
+}
 
 template<typename K, typename V> 
 Node<K, V>::~Node() {
@@ -155,7 +164,7 @@ int SkipList<K, V>::insert_element(const K key, const V value) {
 
     // create update array and initialize it 
     // update is array which put node that the node->forward[i] should be operated later
-    Node<K, V> *update[_max_level+1];
+    Node<K, V> **update = new Node<K, V>*[_max_level+1];
     memset(update, 0, sizeof(Node<K, V>*)*(_max_level+1));  
 
     // start form highest level of skip list 
@@ -295,7 +304,7 @@ void SkipList<K, V>::delete_element(K key) {
 
     mtx.lock();
     Node<K, V> *current = this->_header; 
-    Node<K, V> *update[_max_level+1];
+    Node<K, V> **update = new Node<K, V>*[_max_level+1];
     memset(update, 0, sizeof(Node<K, V>*)*(_max_level+1));
 
     // start from highest level of skip list
@@ -385,9 +394,8 @@ SkipList<K, V>::SkipList(int max_level) {
     this->_element_count = 0;
 
     // create header node and initialize key and value to null
-    K k;
-    V v;
-    this->_header = new Node<K, V>(k, v, _max_level);
+    
+    this->_header = new Node<K, V>(_max_level);
 };
 
 template<typename K, typename V> 
